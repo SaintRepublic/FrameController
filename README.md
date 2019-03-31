@@ -66,7 +66,7 @@ public void onTargetReached(@Nullable FrameLayout targetContainer, int targetPos
 }
 ```
 ## Attention
-This library contains an Animus library. 
+This library contains an Animus library. [Check it on GitHub](https://github.com/SaintRepublic/Animus)
 
 Animus is an another library developed by SaintRepublic.
 
