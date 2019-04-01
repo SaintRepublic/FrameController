@@ -28,7 +28,7 @@ Controller controller = findViewById(R.id.frameController);
 
 **If you include views into FrameController in xml layout, make sure that FrameController contains only FrameLayout child !**
 
-### Example
+## Example
 ```java
 public class MainActivity extends AppCompatActivity implements FrameController.OnSwitchListener {
 
