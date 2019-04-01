@@ -23,7 +23,7 @@ or use it in your xml layout:
         android:layout_height="match_parent" />
 ```
 
-Then in your activity create a Controller interface instence to work with your FrameController:
+Then in your activity create a Controller interface instance to work with your FrameController:
 ```java
 Controller controller = findViewById(R.id.frameController);
 ```
