@@ -26,7 +26,7 @@ Then in your activity create a Controller interface instence to work with your F
 Controller controller = findViewById(R.id.frameController);
 ```
 
-*If you include views into FrameController in xml layout, make sure that FrameController contains only FrameLayout child!!!*
+**If you include views into FrameController in xml layout, make sure that FrameController contains only FrameLayout child !**
 
 ### Example
 ```java
