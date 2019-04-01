@@ -3,6 +3,8 @@ FrameController is a library that will help you to work with multi-layer app int
 
 Version: `1.0`
 
+<img src="https://github.com/SaintRepublic/FrameController/blob/master/sample/framecontroller.gif" width="250">
+
 ## How to use
 Implement it in your project via Gradle:
 ```java
