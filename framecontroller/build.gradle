@@ -9,7 +9,7 @@ android {
         repoName = 'FrameController'
         groupId = 'com.saintrepublic.framecontroller'
         artifactId = 'framecontroller'
-        publishVersion = '1.0'
+        publishVersion = '1.0.1'
         licences = ['Apache-2.0']
         desc = 'FrameController is a library that will help you to work with multi-layer app interfaces.'
         website = 'https://github.com/SaintRepublic/FrameController'
@@ -18,8 +18,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.1"
     }
 
     buildTypes {
