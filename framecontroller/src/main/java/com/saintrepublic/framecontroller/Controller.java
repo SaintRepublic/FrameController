@@ -51,6 +51,13 @@ public interface Controller {
     int ANIMATION_SCROLL_HORIZONTAL = 8;
 
     /**
+     * Returns assigned FrameController
+     *
+     * @return this FrameController
+     */
+    FrameController getFrameController();
+
+    /**
      * Create and add on top of container collection
      * new invisible container(FrameLayout)
      * and put your view into it
@@ -392,6 +399,7 @@ public interface Controller {
      * Switch to -1 position - all containers will hidden
      *
      * @param goFast if true will used fast switch
+     * @param setVisibilityGone set FrameController visibility as GONE after the going out
      */
-    void goOut(boolean goFast);
+    void goOut(boolean goFast, boolean setVisibilityGone);
 }

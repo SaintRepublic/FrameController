@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -14,13 +15,14 @@ import android.widget.Toast;
 import com.saintrepublic.framecontroller.Controller;
 import com.saintrepublic.framecontroller.FrameController;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     Controller controller;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
         // Get instance of FrameController class
@@ -33,7 +35,7 @@ public class MainActivity extends AppCompatActivity{
         controller.setContainersMargins(30);
 
         // Set the animation for switching container
-        controller.setSwitchAnimation(Controller.ANIMATION_SCROLL_VERTICAL);
+        controller.setSwitchAnimation(Controller.ANIMATION_MOVE_RIGHT);
 
         // Set new switch listener
         controller.setSwitchListener(new FrameController.OnSwitchListener() {
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity{
      */
     public void btnLayout2Click(View v) {
 
-       controller.goOut(false);
+       controller.goToLast(false);
     }
 
     /**

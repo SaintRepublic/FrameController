@@ -101,6 +101,11 @@ public class FrameController extends FrameLayout implements Controller {
         clear();
     }
 
+    @Override
+    public FrameController getFrameController() {
+        return this;
+    }
+
     //==================================== Working with layouts ====================================
 
     @Override
@@ -308,16 +313,17 @@ public class FrameController extends FrameLayout implements Controller {
     private int nextPosition = -1;
     private int action = 0;
     private boolean isBlocked = false;
+    private boolean isSetGone;
     private Handler animator = new Handler();
 
     @Override
     public void goTo(@IntRange(from = 0) int position) {
-        goTo(position, false, false);
+        goTo(position, false, false, false);
     }
 
     @Override
     public void goTo(FrameLayout container) {
-        goTo(indexOfChild(container), false, false);
+        goTo(indexOfChild(container), false, false, false);
     }
 
     @Override
@@ -325,37 +331,37 @@ public class FrameController extends FrameLayout implements Controller {
 
     @Override
     public void goFastTo(int position) {
-        goTo(position, true, false);
+        goTo(position, true, false, false);
     }
 
     @Override
     public void goFastTo(FrameLayout container) {
-        goTo(indexOfChild(container), true, false);
+        goTo(indexOfChild(container), true, false, false);
     }
 
     @Override
     public void goFastToContainerWithTag(Object tag) {goFastTo(getContainerWithTag(tag));}
 
     @Override
-    public void goToFirst(boolean goFast) { goTo(0, goFast, false); }
+    public void goToFirst(boolean goFast) { goTo(0, goFast, false, false); }
 
     @Override
-    public void goToLast(boolean goFast) { goTo(getChildCount()-1, goFast, false); }
+    public void goToLast(boolean goFast) { goTo(getChildCount()-1, goFast, false, false); }
 
     @Override
-    public void goToNext() { goTo(getCurrentPosition()+1, false, false);}
+    public void goToNext() { goTo(getCurrentPosition()+1, false, false, false);}
 
     @Override
-    public void goToPrevious() {goTo(getCurrentPosition()-1, false, false);}
+    public void goToPrevious() {goTo(getCurrentPosition()-1, false, false, false);}
 
     @Override
-    public void goOut(boolean goFast) {
+    public void goOut(boolean goFast, boolean setVisibilityGone) {
         if (!isOut()) {
-            goTo(-1, goFast, true);
+            goTo(-1, goFast, true, setVisibilityGone);
         }
     }
 
-    private void goTo(int position, boolean isFast, boolean isOut) {
+    private void goTo(int position, boolean isFast, boolean isOut, boolean isSetGone) {
         if (isBlocked) return;
 
         if (!isOut && (position >= getChildCount() || position < 0)) {
@@ -374,6 +380,9 @@ public class FrameController extends FrameLayout implements Controller {
         if (cPosition == position) {
             return;
         }
+
+        setVisibility(VISIBLE);
+        this.isSetGone = isSetGone;
 
         targetPosition = position;
         cContainer = currentContainer;
@@ -414,6 +423,7 @@ public class FrameController extends FrameLayout implements Controller {
 
         if (switchListener != null)
         switchListener.onSwitchStarted(currentContainer, indexOfChild(currentContainer));
+
         currentContainer = (FrameLayout)getChildAt(targetPosition);
         animus.setInterpolator(Animus.Interpolators.FASTOUT_SLOWIN);
 
@@ -466,6 +476,9 @@ public class FrameController extends FrameLayout implements Controller {
 
             if (switchListener !=null)
                 switchListener.onTargetReached(currentContainer, targetPosition);
+
+            if (isSetGone)
+                setVisibility(GONE);
         }
     };
 
@@ -481,7 +494,7 @@ public class FrameController extends FrameLayout implements Controller {
                 public void onAnimationStart(Animation animation) {}
 
                 @Override
-                public void onAnimationEnd(Animation animation) { prev.setVisibility(GONE); }
+                public void onAnimationEnd(Animation animation) { prev.setVisibility(GONE);  if (isSetGone) setVisibility(GONE);}
 
                 @Override
                 public void onAnimationRepeat(Animation animation) {}
@@ -696,6 +709,7 @@ public class FrameController extends FrameLayout implements Controller {
             @Override
             public void onAnimationEnd(Animation animation) {
                 if (prev != null) prev.setVisibility(GONE);
+                if (out) { if (isSetGone) setVisibility(GONE); }
             }
 
             @Override
@@ -711,8 +725,11 @@ public class FrameController extends FrameLayout implements Controller {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                if (out) isBlocked = false;
                 if (prev != null) prev.setVisibility(GONE);
+                if (out) {
+                    isBlocked = false;
+                    if (isSetGone) setVisibility(GONE);
+                }
             }
 
             @Override

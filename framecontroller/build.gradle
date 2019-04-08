@@ -1,7 +1,19 @@
+apply plugin: 'com.novoda.bintray-release'
 apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 28
+
+    publish {
+        userOrg = 'saintrepublic'
+        repoName = 'FrameController'
+        groupId = 'com.saintrepublic.framecontroller'
+        artifactId = 'framecontroller'
+        publishVersion = '1.0'
+        licences = ['Apache-2.0']
+        desc = 'FrameController is a library that will help you to work with multi-layer app interfaces.'
+        website = 'https://github.com/SaintRepublic/FrameController'
+    }
 
     defaultConfig {
         minSdkVersion 16
