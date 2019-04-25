@@ -72,4 +72,4 @@ This library contains an Animus library. [Check it on GitHub.](https://github.co
 
 Animus is an another library developed by SaintRepublic.
 
-If you implenets both of them you should remove Animus library and use Animus that packed into FrameController.
+If you implement both of them you should remove Animus library and use Animus that packed into FrameController.
