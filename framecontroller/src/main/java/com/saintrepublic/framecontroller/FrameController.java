@@ -109,15 +109,15 @@ public class FrameController extends FrameLayout implements Controller {
     //==================================== Working with layouts ====================================
 
     @Override
-    public void addViewToNewContainer(View view) {
-        addViewToNewContainer(view, -1, null);
+    public FrameLayout addViewToNewContainer(View view) {
+        return addViewToNewContainer(view, -1, null);
     }
 
     @Override
-    public void addViewToNewContainer(View view, Object tag) { addViewToNewContainer(view, -1, tag); }
+    public FrameLayout addViewToNewContainer(View view, Object tag) { return addViewToNewContainer(view, -1, tag); }
 
     @Override
-    public void addViewToNewContainer(View view, int containerPosition, @Nullable Object tag) {
+    public FrameLayout addViewToNewContainer(View view, int containerPosition, @Nullable Object tag) {
         FrameLayout container = fc.createNewContainer();
         container.addView(view);
         container.setTag(tag);
@@ -126,9 +126,10 @@ public class FrameController extends FrameLayout implements Controller {
         } catch (Exception e) {
             Log.e("FrameController: ", "addViewToNewContainer: ", e);
         }
+        return container;
     }
 
-    private void addViewToNewContainer(@LayoutRes int layoutID, int containerPosition, @Nullable Object tag) {
+    private FrameLayout addViewToNewContainer(@LayoutRes int layoutID, int containerPosition, @Nullable Object tag) {
         FrameLayout container = fc.createNewContainer();
         View layout = LayoutInflater.from(context).inflate(layoutID, container, false);
         container.setTag(tag);
@@ -138,36 +139,37 @@ public class FrameController extends FrameLayout implements Controller {
         } catch (Exception e) {
             Log.e("FrameController: ", "addViewToNewContainer: ", e);
         }
+        return container;
     }
 
     @Override
-    public void addLayoutToNewContainer(@LayoutRes int layoutID) {
+    public FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID) {
         View layout = LayoutInflater.from(context).inflate(layoutID, null);
-        addViewToNewContainer(layoutID, -1, null);
+        return addViewToNewContainer(layoutID, -1, null);
     }
 
     @Override
-    public void addLayoutToNewContainer(@LayoutRes int layoutID, @Nullable Object tag) {
-        addViewToNewContainer(layoutID, -1, tag);
+    public FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID, @Nullable Object tag) {
+        return addViewToNewContainer(layoutID, -1, tag);
     }
 
     @Override
-    public void addLayoutToNewContainer(@LayoutRes int layoutID, int containerPosition, @Nullable Object tag) {
-        addViewToNewContainer(layoutID, containerPosition, tag);
+    public FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID, int containerPosition, @Nullable Object tag) {
+        return addViewToNewContainer(layoutID, containerPosition, tag);
     }
 
     @Override
-    public void addLayoutToNewContainer(@LayoutRes int layoutID, ViewGroup.LayoutParams layoutParams, @Nullable Object tag) {
-        View layout = LayoutInflater.from(context).inflate(layoutID, null);
-        layout.setLayoutParams(layoutParams);
-        addViewToNewContainer(layout, tag);
-    }
-
-    @Override
-    public void addLayoutToNewContainer(@LayoutRes int layoutID, ViewGroup.LayoutParams layoutParams, int containerPosition, @Nullable Object tag) {
+    public FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID, ViewGroup.LayoutParams layoutParams, @Nullable Object tag) {
         View layout = LayoutInflater.from(context).inflate(layoutID, null);
         layout.setLayoutParams(layoutParams);
-        addViewToNewContainer(layout, containerPosition, tag);
+        return addViewToNewContainer(layout, tag);
+    }
+
+    @Override
+    public FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID, ViewGroup.LayoutParams layoutParams, int containerPosition, @Nullable Object tag) {
+        View layout = LayoutInflater.from(context).inflate(layoutID, null);
+        layout.setLayoutParams(layoutParams);
+        return addViewToNewContainer(layout, containerPosition, tag);
     }
 
     @Override
@@ -317,55 +319,58 @@ public class FrameController extends FrameLayout implements Controller {
     private Handler animator = new Handler();
 
     @Override
-    public void goTo(@IntRange(from = 0) int position) {
-        goTo(position, false, false, false);
+    public boolean goTo(@IntRange(from = 0) int position) {
+        return goTo(position, false, false, false);
     }
 
     @Override
-    public void goTo(FrameLayout container) {
-        goTo(indexOfChild(container), false, false, false);
+    public boolean goTo(FrameLayout container) {
+        return goTo(indexOfChild(container), false, false, false);
     }
 
     @Override
-    public void goToContainerWithTag(Object tag) {goTo(getContainerWithTag(tag));}
+    public boolean goToContainerWithTag(Object tag) {return goTo(getContainerWithTag(tag));}
 
     @Override
-    public void goFastTo(int position) {
-        goTo(position, true, false, false);
+    public boolean goFastTo(int position) {
+        return goTo(position, true, false, false);
     }
 
     @Override
-    public void goFastTo(FrameLayout container) {
-        goTo(indexOfChild(container), true, false, false);
+    public boolean goFastTo(FrameLayout container) {
+        return goTo(indexOfChild(container), true, false, false);
     }
 
     @Override
-    public void goFastToContainerWithTag(Object tag) {goFastTo(getContainerWithTag(tag));}
+    public boolean goFastToContainerWithTag(Object tag) {return goFastTo(getContainerWithTag(tag));}
 
     @Override
-    public void goToFirst(boolean goFast) { goTo(0, goFast, false, false); }
+    public boolean goToFirst(boolean goFast) { return goTo(0, goFast, false, false); }
 
     @Override
-    public void goToLast(boolean goFast) { goTo(getChildCount()-1, goFast, false, false); }
+    public boolean goToLast(boolean goFast) { return goTo(getChildCount()-1, goFast, false, false); }
 
     @Override
-    public void goToNext() { goTo(getCurrentPosition()+1, false, false, false);}
+    public boolean goToNext() { return goTo(getCurrentPosition()+1, false, false, false);}
 
     @Override
-    public void goToPrevious() {goTo(getCurrentPosition()-1, false, false, false);}
+    public boolean goToPrevious() {return goTo(getCurrentPosition()-1, false, false, false);}
 
     @Override
-    public void goOut(boolean goFast, boolean setVisibilityGone) {
+    public boolean goOut(boolean goFast, boolean setVisibilityGone) {
         if (!isOut()) {
-            goTo(-1, goFast, true, setVisibilityGone);
+            return goTo(-1, goFast, true, setVisibilityGone);
+        }
+        else {
+            return false;
         }
     }
 
-    private void goTo(int position, boolean isFast, boolean isOut, boolean isSetGone) {
-        if (isBlocked) return;
+    private boolean goTo(int position, boolean isFast, boolean isOut, boolean isSetGone) {
+        if (isBlocked) return false;
 
         if (!isOut && (position >= getChildCount() || position < 0)) {
-            return;
+            return false;
         }
 
         int cPosition;
@@ -378,7 +383,7 @@ public class FrameController extends FrameLayout implements Controller {
         }
 
         if (cPosition == position) {
-            return;
+            return false;
         }
 
         setVisibility(VISIBLE);
@@ -407,6 +412,7 @@ public class FrameController extends FrameLayout implements Controller {
         }
 
         startAnimation();
+        return true;
     }
 
     private void prepareNext(int position) {
@@ -433,6 +439,7 @@ public class FrameController extends FrameLayout implements Controller {
                 break;
             }
             case ANIMATION_FADE: {
+                animus.setInterpolator(Animus.Interpolators.LINEAR);
                 animator.post(fade);
                 break;
             }
@@ -472,7 +479,7 @@ public class FrameController extends FrameLayout implements Controller {
                 cContainer.setVisibility(GONE);
 
             if (currentContainer != null)
-               currentContainer.setVisibility(VISIBLE);
+                currentContainer.setVisibility(VISIBLE);
 
             if (switchListener !=null)
                 switchListener.onTargetReached(currentContainer, targetPosition);
@@ -485,25 +492,32 @@ public class FrameController extends FrameLayout implements Controller {
     private Runnable fade = new Runnable() {
         @Override
         public void run() {
-            Animation hide = animus.hide(600, false);
+            Animation fade = animus.show(1000, false);
             final View next = currentContainer;
             final View prev = cContainer;
 
-            hide.setAnimationListener(new Animation.AnimationListener() {
+            Animation.AnimationListener listener = new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {}
 
                 @Override
-                public void onAnimationEnd(Animation animation) { prev.setVisibility(GONE);  if (isSetGone) setVisibility(GONE);}
+                public void onAnimationEnd(Animation animation) { if (prev!=null) prev.setVisibility(GONE);  if (isSetGone) setVisibility(GONE);}
 
                 @Override
                 public void onAnimationRepeat(Animation animation) {}
-            });
+            };
 
-            if (prev != null) {prev.startAnimation(hide);}
+            fade.setAnimationListener(listener);
+
             if (next != null) {
                 next.setVisibility(VISIBLE);
-                next.startAnimation(animus.show(600, false));
+                next.startAnimation(fade);
+            }
+            else {
+                if (prev != null) {
+                    fade = animus.hide(1000, false);
+                    fade.setAnimationListener(listener);
+                    prev.startAnimation(fade);}
             }
 
             if (switchListener != null)
@@ -519,7 +533,7 @@ public class FrameController extends FrameLayout implements Controller {
             final View prev = cContainer;
 
             if (action == 0) {
-                anim = animus.scaleFrom0To1(400, false);
+                anim = animus.scaleFrom0To1(500, false);
                 anim.setAnimationListener(getAnimationListener(next, prev));
 
                 if (nextPosition != targetPosition) { nextPosition++; out = false; }
@@ -529,7 +543,7 @@ public class FrameController extends FrameLayout implements Controller {
                 next.startAnimation(anim);
             }
             else {
-                anim = animus.scaleFrom1To0(400, false);
+                anim = animus.scaleFrom1To0(500, false);
                 anim.setAnimationListener(getAnimationListener(next, prev));
 
                 if (nextPosition != targetPosition) { nextPosition--; out = false; }
@@ -543,7 +557,7 @@ public class FrameController extends FrameLayout implements Controller {
                 if (switchListener != null)
                     switchListener.onTargetReached(currentContainer, targetPosition);
             }
-            else animator.postDelayed(this, 150);
+            else animator.postDelayed(this, 200);
         }
     };
 

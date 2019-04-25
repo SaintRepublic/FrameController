@@ -63,8 +63,9 @@ public interface Controller {
      * and put your view into it
      *
      * @param view any view
+     * @return created container (FrameLayout)
      */
-    void addViewToNewContainer(View view);
+    FrameLayout addViewToNewContainer(View view);
 
     /**
      * Create and add on top of container collection
@@ -73,8 +74,9 @@ public interface Controller {
      *
      * @param view any view
      * @param tag any tag
+     * @return created container (FrameLayout)
      */
-    void addViewToNewContainer(View view, Object tag);
+    FrameLayout addViewToNewContainer(View view, Object tag);
 
     /**
      * Create a new invisible container(FrameLayout) with your tag,
@@ -84,8 +86,9 @@ public interface Controller {
      * @param view any view
      * @param containerPosition position in containers group at which to add your view
      * @param tag any tag
+     * @return created container (FrameLayout)
      */
-    void addViewToNewContainer(View view, int containerPosition, @Nullable Object tag);
+    FrameLayout addViewToNewContainer(View view, int containerPosition, @Nullable Object tag);
 
     /**
      * Create and add on top of container collection
@@ -93,8 +96,9 @@ public interface Controller {
      * and inflate into it your xml layout resource
      *
      * @param layoutID layout resource id
+     * @return created container (FrameLayout)
      */
-    void addLayoutToNewContainer(@LayoutRes int layoutID);
+    FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID);
 
     /**
      * Create and add on top of container collection
@@ -103,8 +107,9 @@ public interface Controller {
      *
      * @param layoutID layout resource id
      * @param tag any tag
+     * @return created container (FrameLayout)
      */
-    void addLayoutToNewContainer(@LayoutRes int layoutID, Object tag);
+    FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID, Object tag);
 
     /**
      * Create a new invisible container(FrameLayout) with your tag,
@@ -114,8 +119,9 @@ public interface Controller {
      * @param layoutID layout resource id
      * @param containerPosition layoutParams which will set to your layout
      * @param tag any tag
+     * @return created container (FrameLayout)
      */
-    void addLayoutToNewContainer(@LayoutRes int layoutID, int containerPosition, @Nullable Object tag);
+    FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID, int containerPosition, @Nullable Object tag);
 
     /**
      * Create and add on top of container collection
@@ -126,8 +132,9 @@ public interface Controller {
      * @param layoutID layout resource id
      * @param layoutParams layoutParams which will set to your layout
      * @param tag any tag
+     * @return created container (FrameLayout)
      */
-    void addLayoutToNewContainer(@LayoutRes int layoutID, ViewGroup.LayoutParams layoutParams, @Nullable Object tag);
+    FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID, ViewGroup.LayoutParams layoutParams, @Nullable Object tag);
 
     /**
      * Create a new invisible container(FrameLayout) with your tag,
@@ -139,8 +146,9 @@ public interface Controller {
      * @param containerPosition layoutParams which will set to your layout
      * @param layoutParams layoutParams which will set to your layout
      * @param tag any tag
+     * @return created container (FrameLayout)
      */
-    void addLayoutToNewContainer(@LayoutRes int layoutID, ViewGroup.LayoutParams layoutParams, int containerPosition, @Nullable Object tag);
+    FrameLayout addLayoutToNewContainer(@LayoutRes int layoutID, ViewGroup.LayoutParams layoutParams, int containerPosition, @Nullable Object tag);
 
     /**
      * Returns the count of containers that contains in FrameController now;
@@ -329,8 +337,10 @@ public interface Controller {
      * If animation type is NONE or FADE it use Fast switch instead
      *
      * @param position position index of target container
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goTo(@IntRange(from = 0) int position);
+    boolean goTo(@IntRange(from = 0) int position);
 
     /**
      * Find position and switch to specified container
@@ -338,8 +348,10 @@ public interface Controller {
      * If animation type is NONE or FADE it use Fast switch instead
      *
      * @param container target container
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goTo(FrameLayout container);
+    boolean goTo(FrameLayout container);
 
     /**
      * Find container with specified tag and switch to it
@@ -347,59 +359,79 @@ public interface Controller {
      * If animation type is NONE or FADE it use Fast switch instead
      *
      * @param tag target container`s tag
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goToContainerWithTag(Object tag);
+    boolean goToContainerWithTag(Object tag);
 
     /**
      * Skip other container and switch directly to container at specified position
      *
      * @param position position index of target container
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goFastTo(int position);
+    boolean goFastTo(int position);
 
     /**
      * Find position and switch directly to specified container
      *
      * @param container target container
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goFastTo(FrameLayout container);
+    boolean goFastTo(FrameLayout container);
 
     /**
      * Find container with specified tag and switch to it directly
      *
      * @param tag target container`s tag
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goFastToContainerWithTag(Object tag);
+    boolean goFastToContainerWithTag(Object tag);
 
     /**
      * Switch to first container in container collection
      *
      * @param goFast if true will used fast switch
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goToFirst(boolean goFast);
+    boolean goToFirst(boolean goFast);
 
     /**
      * Switch to last container in container collection
      *
      * @param goFast if true will used fast switch
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goToLast(boolean goFast);
+    boolean goToLast(boolean goFast);
 
     /**
      * Switch to next container in container collection
+     *
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goToNext();
+    boolean goToNext();
 
     /**
      * Switch to previous container in container collection
+     *
+     * @return True if switching started or False if cannot start switching
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goToPrevious();
+    boolean goToPrevious();
 
     /**
      * Switch to -1 position - all containers will hidden
      *
      * @param goFast if true will used fast switch
      * @param setVisibilityGone set FrameController visibility as GONE after the going out
+     * @return True if switching started or False if already in out
+     *         (Also may return False if invoked when Swipe or Scroll animations running)
      */
-    void goOut(boolean goFast, boolean setVisibilityGone);
+    boolean goOut(boolean goFast, boolean setVisibilityGone);
 }
