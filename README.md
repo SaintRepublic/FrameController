@@ -1,14 +1,14 @@
 # FrameController
 FrameController is a library that will help you to work with multi-layer app interfaces.
 
-Version: `1.0.1`
+Version: `1.0.3`
 
 <img src="https://github.com/SaintRepublic/FrameController/blob/master/sample/framecontroller.gif" width="250">
 
 ## How to use
 Implement it in your project via Gradle:
 ```java
-implementation 'com.saintrepublic.framecontroller:framecontroller:1.0.1'
+implementation 'com.saintrepublic.framecontroller:framecontroller:1.0.3'
 ```
 
 Create new instance in your activity:
