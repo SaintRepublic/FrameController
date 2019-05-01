@@ -46,12 +46,12 @@ protected void onCreate(Bundle savedInstanceState) {
 
      controller.addLayoutToNewContainer(R.layout.layout_1);
      controller.addLayoutToNewContainer(R.layout.layout_2);
-     controller.addLayoutToNewContainer(R.layout.layout_3, "Tag for container 3");
+     controller.addLayoutToNewContainer(R.layout.layout_3, "Third container`s tag");
 }
 
 public void onClick(View clickedButton) {
      
-     controller.goToContainerWithTag("Tag for container 3");
+     controller.goToContainerWithTag("Third container`s tag");
 }
 
 @Override
