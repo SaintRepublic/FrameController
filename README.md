@@ -67,8 +67,7 @@ public void onTargetReached(@Nullable FrameLayout targetContainer, int targetPos
 
 @Override
 public void onAnimationEnds(boolean isOut) {
-    
-    Toast.makeText(getApplicationContext(), "Target in position "+targetPosition+" reached", Toast.LENGTH_SHORT).show();
+
 }
 }
 ```
