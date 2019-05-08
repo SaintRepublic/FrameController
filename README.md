@@ -1,14 +1,14 @@
 # FrameController
 FrameController is a library that will help you to work with multi-layer app interfaces.
 
-Version: `1.0.1`
+Version: `1.0.3`
 
 <img src="https://github.com/SaintRepublic/FrameController/blob/master/sample/framecontroller.gif" width="250">
 
 ## How to use
 Implement it in your project via Gradle:
 ```java
-implementation 'com.saintrepublic.framecontroller:framecontroller:1.0.1'
+implementation 'com.saintrepublic.framecontroller:framecontroller:1.0.3'
 ```
 
 Create new instance in your activity:
@@ -28,7 +28,7 @@ Then in your activity create a Controller interface instance to work with your F
 Controller controller = findViewById(R.id.frameController);
 ```
 
-*If you include views into FrameController in xml layout, make sure that FrameController contains only FrameLayout child !*
+*If you include views into FrameController in xml layout, make sure that FrameController contains only FrameLayout child!*
 
 ## Example
 ```java
@@ -46,12 +46,12 @@ protected void onCreate(Bundle savedInstanceState) {
 
      controller.addLayoutToNewContainer(R.layout.layout_1);
      controller.addLayoutToNewContainer(R.layout.layout_2);
-     controller.addLayoutToNewContainer(R.layout.layout_3, "Tag for container 3");
+     controller.addLayoutToNewContainer(R.layout.layout_3, "Third container`s tag");
 }
 
 public void onClick(View clickedButton) {
      
-     controller.goToContainerWithTag("Tag for container 3");
+     controller.goToContainerWithTag("Third container`s tag");
 }
 
 @Override
@@ -72,4 +72,4 @@ This library contains an Animus library. [Check it on GitHub.](https://github.co
 
 Animus is an another library developed by SaintRepublic.
 
-If you implement both of them you should remove Animus library and use Animus that packed into FrameController.
+If you implement both of them you can remove Animus library and use Animus that packed into FrameController.
