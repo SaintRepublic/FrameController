@@ -50,6 +50,10 @@ public interface Controller {
     int ANIMATION_SCROLL_VERTICAL = 7;
     int ANIMATION_SCROLL_HORIZONTAL = 8;
 
+    int SPEED_SLOW = 0;
+    int SPEED_NORMAL = 1;
+    int SPEED_FAST = 2;
+
     /**
      * Returns assigned FrameController
      *
@@ -315,7 +319,7 @@ public interface Controller {
      *
      * @param AnimationType index of animation type
      */
-    void setSwitchAnimation(int AnimationType);
+    void setSwitchAnimation(@IntRange(from=-1,to=8) int AnimationType);
 
     /**
      * Return index of current animation type
@@ -323,6 +327,22 @@ public interface Controller {
      * @return index of current animation type
      */
     int getSwitchAnimationType();
+
+    /**
+     * Set speed of switching animations
+     *
+     * Use speeds constants as Controller.SPEED_...
+     *
+     * @param speed index of animations speed
+     */
+    void setAnimationSpeed(@IntRange(from=0,to=2)int speed);
+
+    /**
+     * Return index of current animations speed
+     *
+     * @return index of current animations speed
+     */
+    int getAnimationSpeed();
 
     /**
      * Set FrameController.OnSwitchListener to FrameController

@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set the animation for switching container
         controller.setSwitchAnimation(Controller.ANIMATION_MOVE_RIGHT);
+        controller.setAnimationSpeed(Controller.SPEED_NORMAL);
 
         // Set new switch listener
         controller.setSwitchListener(new FrameController.OnSwitchListener() {
@@ -66,6 +67,16 @@ public class MainActivity extends AppCompatActivity {
                 // Do something when required container becomes visible
 
                 Toast.makeText(getApplicationContext(), "Target in position "+position+" reached", Toast.LENGTH_SHORT).show();
+            }
+
+            /**
+             * Triggered when all switching animations ends
+             *
+             * @param isOut true if out reached (all containers becomes invisible) else false
+             */
+            @Override
+            public void onAnimationEnds(boolean isOut) {
+
             }
         });
 

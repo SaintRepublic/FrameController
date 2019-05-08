@@ -118,6 +118,7 @@ class FCController {
         private Drawable backgroundDrawable;
         private int backgroundColor;
         private int animation;
+        private int speed;
 
         private int[] margins;
         private int[] paddings;
@@ -129,6 +130,7 @@ class FCController {
         void setDefaultConfig() {
             useDrawable = false;
             animation = -1;
+            speed = 1;
             backgroundColor = Color.argb(255, 255, 255, 255);
             setMargins(0,0,0,0);
             setPaddings(0, 0, 0, 0);
@@ -170,6 +172,14 @@ class FCController {
 
         int getSwitchAnimation() {
             return animation;
+        }
+
+        void setAnimationSpeed(int speed) {
+            this.speed = speed;
+        }
+
+        int getAnimationSpeed() {
+            return speed;
         }
     }
 }

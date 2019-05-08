@@ -68,6 +68,10 @@ public class FrameController extends FrameLayout implements Controller {
     public final static int ANIMATION_SCROLL_VERTICAL = 7;
     public final static int ANIMATION_SCROLL_HORIZONTAL = 8;
 
+    public final static int SPEED_SLOW = 0;
+    public final static int SPEED_NORMAL = 1;
+    public final static int SPEED_FAST = 2;
+
     private Context context;
     private Animus animus;
     private FCController fc;
@@ -275,6 +279,16 @@ public class FrameController extends FrameLayout implements Controller {
         return fc.config.getSwitchAnimation();
     }
 
+    @Override
+    public void setAnimationSpeed(int speed) {
+        fc.config.setAnimationSpeed(speed);
+    }
+
+    @Override
+    public int getAnimationSpeed() {
+        return fc.config.getAnimationSpeed();
+    }
+
     //===================================== Working with callbacks =================================
 
     public interface OnSwitchListener {
@@ -282,6 +296,7 @@ public class FrameController extends FrameLayout implements Controller {
          * Triggered when switch started
          *
          * @param currentContainer start container
+         * @param currentPosition position of current container
          */
         void onSwitchStarted(@Nullable FrameLayout currentContainer, int currentPosition);
 
@@ -289,8 +304,16 @@ public class FrameController extends FrameLayout implements Controller {
          * Triggered when target container becomes visible
          *
          * @param targetContainer required container
+         * @param targetPosition position of required container
          */
         void onTargetReached(@Nullable FrameLayout targetContainer, int targetPosition);
+
+        /**
+         * Triggered when all switching animations ends
+         *
+         * @param isOut true if out reached (all containers becomes invisible) else false
+         */
+        void onAnimationEnds(boolean isOut);
     }
 
     @Override
@@ -433,6 +456,8 @@ public class FrameController extends FrameLayout implements Controller {
         currentContainer = (FrameLayout)getChildAt(targetPosition);
         animus.setInterpolator(Animus.Interpolators.FASTOUT_SLOWIN);
 
+        setSpeed();
+
         switch (fc.config.getSwitchAnimation()) {
             case ANIMATION_NONE: {
                 animator.post(none);
@@ -468,9 +493,41 @@ public class FrameController extends FrameLayout implements Controller {
         }
     }
 
+    private void setSpeed() {
+        switch (fc.config.getSwitchAnimation()) {
+            case ANIMATION_FADE:
+            case ANIMATION_SCALE: {
+                if (getAnimationSpeed() == SPEED_FAST) {duration=500; delay = 200;}
+                if (getAnimationSpeed() == SPEED_NORMAL) {duration=1000; delay = 350;}
+                if (getAnimationSpeed() == SPEED_SLOW) {duration=1500; delay = 500;}
+                break;
+            }
+
+            case ANIMATION_SWIPE:
+            case ANIMATION_SCROLL_VERTICAL:
+            case ANIMATION_SCROLL_HORIZONTAL: {
+                if (getAnimationSpeed() == SPEED_FAST) {duration=250; delay = 250;}
+                if (getAnimationSpeed() == SPEED_NORMAL) {duration=600; delay = 600;}
+                if (getAnimationSpeed() == SPEED_SLOW) {duration=1400; delay = 1400;}
+                break;
+            }
+            case ANIMATION_MOVE_RIGHT:
+            case ANIMATION_MOVE_BOTTOM:
+            case ANIMATION_MOVE_LEFT:
+            case ANIMATION_MOVE_TOP: {
+                if (getAnimationSpeed() == SPEED_FAST) {duration=350; delay = 140;}
+                if (getAnimationSpeed() == SPEED_NORMAL) {duration=500; delay = 200;}
+                if (getAnimationSpeed() == SPEED_SLOW) {duration=800; delay = 300;}
+                break;
+            }
+        }
+    }
+
     //====================================== Animations ============================================
 
     private boolean out = false;
+    private int duration = 0;
+    private int delay = 0;
 
     private Runnable none = new Runnable() {
         @Override
@@ -481,8 +538,10 @@ public class FrameController extends FrameLayout implements Controller {
             if (currentContainer != null)
                 currentContainer.setVisibility(VISIBLE);
 
-            if (switchListener !=null)
+            if (switchListener !=null) {
                 switchListener.onTargetReached(currentContainer, targetPosition);
+                switchListener.onAnimationEnds(isOut());
+            }
 
             if (isSetGone)
                 setVisibility(GONE);
@@ -492,32 +551,41 @@ public class FrameController extends FrameLayout implements Controller {
     private Runnable fade = new Runnable() {
         @Override
         public void run() {
-            Animation fade = animus.show(1000, false);
+
             final View next = currentContainer;
             final View prev = cContainer;
+            Animation fade;
 
             Animation.AnimationListener listener = new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {}
 
                 @Override
-                public void onAnimationEnd(Animation animation) { if (prev!=null) prev.setVisibility(GONE);  if (isSetGone) setVisibility(GONE);}
+                public void onAnimationEnd(Animation animation) {
+                    if (prev!=null) prev.setVisibility(GONE);
+                    if (isSetGone) setVisibility(GONE);
+                    if (switchListener != null) switchListener.onAnimationEnds(isOut());
+                }
 
                 @Override
                 public void onAnimationRepeat(Animation animation) {}
             };
 
-            fade.setAnimationListener(listener);
-
-            if (next != null) {
-                next.setVisibility(VISIBLE);
-                next.startAnimation(fade);
+            if (action == 0) {
+                fade = animus.show(duration, false);
+                fade.setAnimationListener(listener);
+                if (next != null) {
+                    next.setVisibility(VISIBLE);
+                    next.startAnimation(fade);
+                }
             }
             else {
+                fade = animus.hide(duration, false);
+                fade.setAnimationListener(listener);
                 if (prev != null) {
-                    fade = animus.hide(1000, false);
-                    fade.setAnimationListener(listener);
-                    prev.startAnimation(fade);}
+                    if (next != null) next.setVisibility(VISIBLE);
+                    prev.startAnimation(fade);
+                }
             }
 
             if (switchListener != null)
@@ -533,7 +601,7 @@ public class FrameController extends FrameLayout implements Controller {
             final View prev = cContainer;
 
             if (action == 0) {
-                anim = animus.scaleFrom0To1(500, false);
+                anim = animus.scaleFrom0To1(duration, false);
                 anim.setAnimationListener(getAnimationListener(next, prev));
 
                 if (nextPosition != targetPosition) { nextPosition++; out = false; }
@@ -543,7 +611,7 @@ public class FrameController extends FrameLayout implements Controller {
                 next.startAnimation(anim);
             }
             else {
-                anim = animus.scaleFrom1To0(500, false);
+                anim = animus.scaleFrom1To0(duration, false);
                 anim.setAnimationListener(getAnimationListener(next, prev));
 
                 if (nextPosition != targetPosition) { nextPosition--; out = false; }
@@ -557,7 +625,7 @@ public class FrameController extends FrameLayout implements Controller {
                 if (switchListener != null)
                     switchListener.onTargetReached(currentContainer, targetPosition);
             }
-            else animator.postDelayed(this, 200);
+            else animator.postDelayed(this, delay);
         }
     };
 
@@ -573,19 +641,19 @@ public class FrameController extends FrameLayout implements Controller {
             AnimationSet prevAnim = new AnimationSet(true);
 
             if (action == 0) {
-                nextAnim.addAnimation(animus.fromRightOfParent(250, false));
-                nextAnim.addAnimation(animus.rotate(45, 0, 0.5f, 1.0f, 250, false));
-                prevAnim.addAnimation(animus.toLeftOfParent(250, false));
-                prevAnim.addAnimation(animus.rotate(0, -45, 0.5f, 1.0f, 250, false));
+                nextAnim.addAnimation(animus.fromRightOfParent(duration, false));
+                nextAnim.addAnimation(animus.rotate(45, 0, 0.5f, 1.0f, duration, false));
+                prevAnim.addAnimation(animus.toLeftOfParent(duration, false));
+                prevAnim.addAnimation(animus.rotate(0, -45, 0.5f, 1.0f, duration, false));
 
                 if (nextPosition != targetPosition) { nextPosition++; out = false; }
                 else out = true;
             }
             else {
-                nextAnim.addAnimation(animus.fromLeftOfParent(250, false));
-                nextAnim.addAnimation(animus.rotate(-45, 0, 0.5f, 1.0f, 250, false));
-                prevAnim.addAnimation(animus.toRightOfParent(250, false));
-                prevAnim.addAnimation(animus.rotate(0, 45, 0.5f, 1.0f, 250, false));
+                nextAnim.addAnimation(animus.fromLeftOfParent(duration, false));
+                nextAnim.addAnimation(animus.rotate(-45, 0, 0.5f, 1.0f, duration, false));
+                prevAnim.addAnimation(animus.toRightOfParent(duration, false));
+                prevAnim.addAnimation(animus.rotate(0, 45, 0.5f, 1.0f, duration, false));
 
                 if (nextPosition != targetPosition) { nextPosition--; out = false; }
                 else out = true;
@@ -604,7 +672,7 @@ public class FrameController extends FrameLayout implements Controller {
                 if (switchListener != null)
                     switchListener.onTargetReached(currentContainer, targetPosition);
             }
-            else animator.postDelayed(this, 250);
+            else animator.postDelayed(this, delay);
         }
     };
 
@@ -617,11 +685,11 @@ public class FrameController extends FrameLayout implements Controller {
 
             if (action == 0) {
                 switch (fc.config.getSwitchAnimation()){
-                    case ANIMATION_MOVE_RIGHT: { anim = animus.fromRightOfParent(400, false); break; }
-                    case ANIMATION_MOVE_BOTTOM: { anim = animus.fromBottomOfParent(400, false); break; }
-                    case ANIMATION_MOVE_LEFT: { anim = animus.fromLeftOfParent(400, false); break; }
-                    case ANIMATION_MOVE_TOP: { anim = animus.fromTopOfParent(400, false); break; }
-                    default: {anim = animus.fromRightOfParent(400, false); break;}
+                    case ANIMATION_MOVE_RIGHT: { anim = animus.fromRightOfParent(duration, false); break; }
+                    case ANIMATION_MOVE_BOTTOM: { anim = animus.fromBottomOfParent(duration, false); break; }
+                    case ANIMATION_MOVE_LEFT: { anim = animus.fromLeftOfParent(duration, false); break; }
+                    case ANIMATION_MOVE_TOP: { anim = animus.fromTopOfParent(duration, false); break; }
+                    default: {anim = animus.fromRightOfParent(duration, false); break;}
                 }
                 anim.setAnimationListener(getAnimationListener(next, prev));
 
@@ -632,11 +700,11 @@ public class FrameController extends FrameLayout implements Controller {
             }
             else {
                 switch (fc.config.getSwitchAnimation()){
-                    case ANIMATION_MOVE_RIGHT: { anim = animus.toRightOfParent(400, false); break; }
-                    case ANIMATION_MOVE_BOTTOM: { anim = animus.toBottomOfParent(400, false); break; }
-                    case ANIMATION_MOVE_LEFT: { anim = animus.toLeftOfParent(400, false); break; }
-                    case ANIMATION_MOVE_TOP: { anim = animus.toTopOfParent(400, false); break; }
-                    default: {anim = animus.toRightOfParent(400, false); break;}
+                    case ANIMATION_MOVE_RIGHT: { anim = animus.toRightOfParent(duration, false); break; }
+                    case ANIMATION_MOVE_BOTTOM: { anim = animus.toBottomOfParent(duration, false); break; }
+                    case ANIMATION_MOVE_LEFT: { anim = animus.toLeftOfParent(duration, false); break; }
+                    case ANIMATION_MOVE_TOP: { anim = animus.toTopOfParent(duration, false); break; }
+                    default: {anim = animus.toRightOfParent(duration, false); break;}
                 }
                 anim.setAnimationListener(getAnimationListener(next, prev));
 
@@ -650,7 +718,7 @@ public class FrameController extends FrameLayout implements Controller {
                 if (switchListener != null)
                     switchListener.onTargetReached(currentContainer, targetPosition);
             }
-            else animator.postDelayed(this, 150);
+            else animator.postDelayed(this, delay);
         }
     };
 
@@ -666,12 +734,12 @@ public class FrameController extends FrameLayout implements Controller {
 
             if (action == 0) {
                 if (fc.config.getSwitchAnimation() == ANIMATION_SCROLL_VERTICAL) {
-                    nextAnim = animus.fromBottomOfParent(200, false);
-                    prevAnim = animus.toTopOfParent(200, false);
+                    nextAnim = animus.fromBottomOfParent(duration, false);
+                    prevAnim = animus.toTopOfParent(duration, false);
                 }
                 else {
-                    nextAnim = animus.fromRightOfParent(200, false);
-                    prevAnim = animus.toLeftOfParent(200, false);
+                    nextAnim = animus.fromRightOfParent(duration, false);
+                    prevAnim = animus.toLeftOfParent(duration, false);
                 }
 
                 if (nextPosition != targetPosition) { nextPosition++; out = false; }
@@ -679,12 +747,12 @@ public class FrameController extends FrameLayout implements Controller {
             }
             else {
                 if (fc.config.getSwitchAnimation() == ANIMATION_SCROLL_VERTICAL) {
-                    nextAnim = animus.fromTopOfParent(200, false);
-                    prevAnim = animus.toBottomOfParent(200, false);
+                    nextAnim = animus.fromTopOfParent(duration, false);
+                    prevAnim = animus.toBottomOfParent(duration, false);
                 }
                 else {
-                    nextAnim = animus.fromLeftOfParent(200, false);
-                    prevAnim = animus.toRightOfParent(200, false);
+                    nextAnim = animus.fromLeftOfParent(duration, false);
+                    prevAnim = animus.toRightOfParent(duration, false);
                 }
 
                 if (nextPosition != targetPosition) { nextPosition--; out = false; }
@@ -705,7 +773,7 @@ public class FrameController extends FrameLayout implements Controller {
                 if (switchListener != null)
                     switchListener.onTargetReached(currentContainer, targetPosition);
             }
-            else animator.postDelayed(this, 200);
+            else animator.postDelayed(this, delay);
         }
     };
 
@@ -723,7 +791,10 @@ public class FrameController extends FrameLayout implements Controller {
             @Override
             public void onAnimationEnd(Animation animation) {
                 if (prev != null) prev.setVisibility(GONE);
-                if (out) { if (isSetGone) setVisibility(GONE); }
+                if (out) {
+                    if (isSetGone) setVisibility(GONE);
+                    if (switchListener != null) switchListener.onAnimationEnds(isOut());
+                }
             }
 
             @Override
@@ -743,6 +814,7 @@ public class FrameController extends FrameLayout implements Controller {
                 if (out) {
                     isBlocked = false;
                     if (isSetGone) setVisibility(GONE);
+                    if (switchListener != null) switchListener.onAnimationEnds(isOut());
                 }
             }
 
