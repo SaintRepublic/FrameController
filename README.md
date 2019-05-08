@@ -43,6 +43,7 @@ protected void onCreate(Bundle savedInstanceState) {
 
      controller = findViewById(R.id.frameController);
      controller.setSwitchAnimation(Controller.ANIMATION_SWIPE);
+     controller.setAnimationSpeed(Controller.SPEED_NORMAL);
 
      controller.addLayoutToNewContainer(R.layout.layout_1);
      controller.addLayoutToNewContainer(R.layout.layout_2);
@@ -69,6 +70,7 @@ public void onTargetReached(@Nullable FrameLayout targetContainer, int targetPos
 public void onAnimationEnds(boolean isOut) {
 
 }
+
 }
 ```
 ## Attention
