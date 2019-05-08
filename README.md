@@ -1,14 +1,14 @@
 # FrameController
 FrameController is a library that will help you to work with multi-layer app interfaces.
 
-Version: `1.0.3`
+Version: `1.0.5`
 
 <img src="https://github.com/SaintRepublic/FrameController/blob/master/sample/framecontroller.gif" width="250">
 
 ## How to use
 Implement it in your project via Gradle:
 ```java
-implementation 'com.saintrepublic.framecontroller:framecontroller:1.0.3'
+implementation 'com.saintrepublic.views:framecontroller:1.0.5'
 ```
 
 Create new instance in your activity:
@@ -65,6 +65,11 @@ public void onTargetReached(@Nullable FrameLayout targetContainer, int targetPos
     Toast.makeText(getApplicationContext(), "Target in position "+targetPosition+" reached", Toast.LENGTH_SHORT).show();
 }
 
+@Override
+public void onAnimationEnds(boolean isOut) {
+    
+    Toast.makeText(getApplicationContext(), "Target in position "+targetPosition+" reached", Toast.LENGTH_SHORT).show();
+}
 }
 ```
 ## Attention
