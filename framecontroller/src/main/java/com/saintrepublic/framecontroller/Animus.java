@@ -557,7 +557,7 @@ public class Animus {
      * @param fillAfter
      * @return AlphaAnimation
      */
-    final public Animation changeAlpha(int fromAlpha, int toAlpha, int duration, boolean fillAfter){
+    final public Animation changeAlpha(float fromAlpha, float toAlpha, int duration, boolean fillAfter){
         Animation alpha = new AlphaAnimation(fromAlpha, toAlpha);
         alpha.setDuration(duration);
         alpha.setFillAfter(fillAfter);

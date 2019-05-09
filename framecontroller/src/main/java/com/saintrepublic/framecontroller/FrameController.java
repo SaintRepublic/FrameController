@@ -101,7 +101,7 @@ public class FrameController extends FrameLayout implements Controller {
 
         switchListener = null;
         currentContainer = null;
-        setSwitchAnimation(-1);
+        setSwitchAnimation(-1, false);
         clear();
     }
 
@@ -270,13 +270,19 @@ public class FrameController extends FrameLayout implements Controller {
     }
 
     @Override
-    public void setSwitchAnimation(int AnimationType) {
+    public void setSwitchAnimation(int AnimationType, boolean enableScaleModifier) {
         fc.config.setSwitchAnimation(AnimationType);
+        fc.config.setScaleMod(enableScaleModifier);
     }
 
     @Override
     public int getSwitchAnimationType() {
         return fc.config.getSwitchAnimation();
+    }
+
+    @Override
+    public boolean isScaleModifierEnabled() {
+        return fc.config.isScaleMod();
     }
 
     @Override
@@ -339,6 +345,7 @@ public class FrameController extends FrameLayout implements Controller {
     private int action = 0;
     private boolean isBlocked = false;
     private boolean isSetGone;
+    private boolean isScaleMod = false;
     private Handler animator = new Handler();
 
     @Override
@@ -457,6 +464,7 @@ public class FrameController extends FrameLayout implements Controller {
         animus.setInterpolator(Animus.Interpolators.FASTOUT_SLOWIN);
 
         setSpeed();
+        isScaleMod = fc.config.isScaleMod();
 
         switch (fc.config.getSwitchAnimation()) {
             case ANIMATION_NONE: {
@@ -481,6 +489,7 @@ public class FrameController extends FrameLayout implements Controller {
             case ANIMATION_MOVE_BOTTOM:
             case ANIMATION_MOVE_LEFT:
             case ANIMATION_MOVE_TOP: {
+                moveAnim = fc.config.getSwitchAnimation();
                 animator.post(move);
                 break;
             }
@@ -497,18 +506,18 @@ public class FrameController extends FrameLayout implements Controller {
         switch (fc.config.getSwitchAnimation()) {
             case ANIMATION_FADE:
             case ANIMATION_SCALE: {
-                if (getAnimationSpeed() == SPEED_FAST) {duration=500; delay = 200;}
-                if (getAnimationSpeed() == SPEED_NORMAL) {duration=1000; delay = 350;}
-                if (getAnimationSpeed() == SPEED_SLOW) {duration=1500; delay = 500;}
+                if (getAnimationSpeed() == SPEED_FAST) {duration=350; delay = 140;}
+                if (getAnimationSpeed() == SPEED_NORMAL) {duration=600; delay = 240;}
+                if (getAnimationSpeed() == SPEED_SLOW) {duration=1000; delay = 400;}
                 break;
             }
 
             case ANIMATION_SWIPE:
             case ANIMATION_SCROLL_VERTICAL:
             case ANIMATION_SCROLL_HORIZONTAL: {
-                if (getAnimationSpeed() == SPEED_FAST) {duration=250; delay = 250;}
-                if (getAnimationSpeed() == SPEED_NORMAL) {duration=600; delay = 600;}
-                if (getAnimationSpeed() == SPEED_SLOW) {duration=1400; delay = 1400;}
+                if (getAnimationSpeed() == SPEED_FAST) {duration=200; delay = 200;}
+                if (getAnimationSpeed() == SPEED_NORMAL) {duration=400; delay = 400;}
+                if (getAnimationSpeed() == SPEED_SLOW) {duration=600; delay = 600;}
                 break;
             }
             case ANIMATION_MOVE_RIGHT:
@@ -554,7 +563,7 @@ public class FrameController extends FrameLayout implements Controller {
 
             final View next = currentContainer;
             final View prev = cContainer;
-            Animation fade;
+            AnimationSet fade = new AnimationSet(false);
 
             Animation.AnimationListener listener = new Animation.AnimationListener() {
                 @Override
@@ -572,17 +581,21 @@ public class FrameController extends FrameLayout implements Controller {
             };
 
             if (action == 0) {
-                fade = animus.show(duration, false);
-                fade.setAnimationListener(listener);
                 if (next != null) {
+                    if (isScaleMod) fade.addAnimation(animus.scaleFrom0To1(duration, false));
+                    fade.addAnimation(animus.show(duration, false));
+                    fade.setAnimationListener(listener);
+
                     next.setVisibility(VISIBLE);
                     next.startAnimation(fade);
                 }
             }
             else {
-                fade = animus.hide(duration, false);
-                fade.setAnimationListener(listener);
                 if (prev != null) {
+                    if (isScaleMod) fade.addAnimation(animus.scaleFrom1To0(duration, false));
+                    fade.addAnimation(animus.hide(duration, false));
+                    fade.setAnimationListener(listener);
+
                     if (next != null) next.setVisibility(VISIBLE);
                     prev.startAnimation(fade);
                 }
@@ -596,29 +609,35 @@ public class FrameController extends FrameLayout implements Controller {
     private Runnable scale = new Runnable() {
         @Override
         public void run() {
+            isBlocked = true;
+
             Animation anim;
             final View next = getChildAt(nextPosition);
             final View prev = cContainer;
 
             if (action == 0) {
-                anim = animus.scaleFrom0To1(duration, false);
-                anim.setAnimationListener(getAnimationListener(next, prev));
-
                 if (nextPosition != targetPosition) { nextPosition++; out = false; }
                 else out = true;
 
-                if (next != null)
-                next.startAnimation(anim);
+                if (next != null) {
+                    anim = animus.scaleFrom0To1(duration, false);
+                    if (out) anim.setAnimationListener(getAnimationListener(next, prev, true));
+                    else anim.setAnimationListener(getAnimationListener(next, prev, false));
+
+                    next.startAnimation(anim);
+                }
             }
             else {
-                anim = animus.scaleFrom1To0(duration, false);
-                anim.setAnimationListener(getAnimationListener(next, prev));
-
                 if (nextPosition != targetPosition) { nextPosition--; out = false; }
                 else out = true;
 
-                if (prev != null)
-                prev.startAnimation(anim);
+                if (prev != null) {
+                    anim = animus.scaleFrom1To0(duration, false);
+                    if (out) anim.setAnimationListener(getAnimationListener(next, prev, true));
+                    else anim.setAnimationListener(getAnimationListener(next, prev, false));
+
+                    prev.startAnimation(anim);
+                }
             }
 
             if (out) {
@@ -637,38 +656,52 @@ public class FrameController extends FrameLayout implements Controller {
             View next = getChildAt(nextPosition);
             View prev = cContainer;
 
-            AnimationSet nextAnim = new AnimationSet(true);
-            AnimationSet prevAnim = new AnimationSet(true);
+            AnimationSet nextAnim = new AnimationSet(false);
+            AnimationSet prevAnim = new AnimationSet(false);
 
             if (action == 0) {
+                if (isScaleMod) {
+                    nextAnim.addAnimation(animus.scale(0.3f, 1.0f, 0.3f, 1.0f, 1.0f, 1.0f, duration, false));
+                    prevAnim.addAnimation(animus.scale(1.0f, 0.2f, 1.0f, 0.2f, 0.0f, 1.0f, (int)(duration*0.8), true));
+                }
                 nextAnim.addAnimation(animus.fromRightOfParent(duration, false));
-                nextAnim.addAnimation(animus.rotate(45, 0, 0.5f, 1.0f, duration, false));
                 prevAnim.addAnimation(animus.toLeftOfParent(duration, false));
-                prevAnim.addAnimation(animus.rotate(0, -45, 0.5f, 1.0f, duration, false));
+                nextAnim.addAnimation(animus.rotate(20, 0, 0.5f, 1.0f, duration, false));
+                prevAnim.addAnimation(animus.rotate(0, -20, 0.5f, 1.0f, duration, false));
 
                 if (nextPosition != targetPosition) { nextPosition++; out = false; }
                 else out = true;
             }
             else {
+                if (isScaleMod) {
+                    nextAnim.addAnimation(animus.scale(0.3f, 1.0f, 0.3f, 1.0f, 0.0f, 1.0f, duration, false));
+                    prevAnim.addAnimation(animus.scale(1.0f, 0.2f, 1.0f, 0.2f, 1.0f, 1.0f, (int)(duration*0.8), true));
+                }
                 nextAnim.addAnimation(animus.fromLeftOfParent(duration, false));
-                nextAnim.addAnimation(animus.rotate(-45, 0, 0.5f, 1.0f, duration, false));
                 prevAnim.addAnimation(animus.toRightOfParent(duration, false));
-                prevAnim.addAnimation(animus.rotate(0, 45, 0.5f, 1.0f, duration, false));
+                nextAnim.addAnimation(animus.rotate(-20, 0, 0.5f, 1.0f, duration, false));
+                prevAnim.addAnimation(animus.rotate(0, 20, 0.5f, 1.0f, duration, false));
 
                 if (nextPosition != targetPosition) { nextPosition--; out = false; }
                 else out = true;
             }
-            prevAnim.setAnimationListener(getPrevListener(prev));
 
-            if (prev != null) prev.startAnimation(prevAnim);
-            if (next != null) {
-                next.setVisibility(VISIBLE);
-                next.startAnimation(nextAnim);
-                cContainer = (FrameLayout)next;
+            if (isScaleMod) {
+                nextAnim.addAnimation(animus.scale(0.3f, 1.0f, 0.3f, 1.0f, 0.5f, 0.5f, duration, false));
+                prevAnim.addAnimation(animus.scale(1.0f, 0.3f, 1.0f, 0.3f, 0.5f, 0.5f, duration, false));
             }
 
+            if (prev != null) {
+                if (out) prevAnim.setAnimationListener(getAnimationListener(next, prev, true));
+                else prevAnim.setAnimationListener(getAnimationListener(next, prev, false));
+                prev.startAnimation(prevAnim);
+            }
+            else if (out) nextAnim.setAnimationListener(getAnimationListener(next, prev, true));
+                 else nextAnim.setAnimationListener(getAnimationListener(next, prev, false));
+
+            if (next != null) next.startAnimation(nextAnim);
+
             if (out) {
-                if (prev == null) isBlocked = false;
                 if (switchListener != null)
                     switchListener.onTargetReached(currentContainer, targetPosition);
             }
@@ -676,42 +709,80 @@ public class FrameController extends FrameLayout implements Controller {
         }
     };
 
+    private int moveAnim;
+
     private Runnable move = new Runnable() {
         @Override
         public void run() {
-            Animation anim;
+            isBlocked = true;
+
+            AnimationSet anim = new AnimationSet(false);
             View next = getChildAt(nextPosition);
             View prev = cContainer;
 
             if (action == 0) {
-                switch (fc.config.getSwitchAnimation()){
-                    case ANIMATION_MOVE_RIGHT: { anim = animus.fromRightOfParent(duration, false); break; }
-                    case ANIMATION_MOVE_BOTTOM: { anim = animus.fromBottomOfParent(duration, false); break; }
-                    case ANIMATION_MOVE_LEFT: { anim = animus.fromLeftOfParent(duration, false); break; }
-                    case ANIMATION_MOVE_TOP: { anim = animus.fromTopOfParent(duration, false); break; }
-                    default: {anim = animus.fromRightOfParent(duration, false); break;}
-                }
-                anim.setAnimationListener(getAnimationListener(next, prev));
-
                 if (nextPosition != targetPosition) { nextPosition++; out = false; }
                 else out = true;
 
-                next.startAnimation(anim);
+                if (next != null) {
+                    switch (moveAnim){
+                        case ANIMATION_MOVE_RIGHT: {
+                            anim.addAnimation(animus.fromRightOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(0.6f, 1.0f, 0.6f, 1.0f, 1.0f, 0.5f, duration, false));
+                            break; }
+                        case ANIMATION_MOVE_BOTTOM: {
+                            anim.addAnimation(animus.fromBottomOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(0.6f, 1.0f, 0.6f, 1.0f, 0.5f, 1.0f, duration, false));
+                            break; }
+                        case ANIMATION_MOVE_LEFT: {
+                            anim.addAnimation(animus.fromLeftOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(0.6f, 1.0f, 0.6f, 1.0f, 0.0f, 0.5f, duration, false));
+                            break; }
+                        case ANIMATION_MOVE_TOP: {
+                            anim.addAnimation(animus.fromTopOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(0.6f, 1.0f, 0.6f, 1.0f, 0.5f, 0.0f, duration, false));
+                            break; }
+                        default: {
+                            anim.addAnimation(animus.fromRightOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(0.6f, 1.0f, 0.6f, 1.0f, 1.0f, 0.5f, duration, false));
+                            break; }
+                    }
+                    if (out) anim.setAnimationListener(getAnimationListener(next, prev, true));
+                    else anim.setAnimationListener(getAnimationListener(next, prev, false));
+                    next.startAnimation(anim);
+                }
             }
             else {
-                switch (fc.config.getSwitchAnimation()){
-                    case ANIMATION_MOVE_RIGHT: { anim = animus.toRightOfParent(duration, false); break; }
-                    case ANIMATION_MOVE_BOTTOM: { anim = animus.toBottomOfParent(duration, false); break; }
-                    case ANIMATION_MOVE_LEFT: { anim = animus.toLeftOfParent(duration, false); break; }
-                    case ANIMATION_MOVE_TOP: { anim = animus.toTopOfParent(duration, false); break; }
-                    default: {anim = animus.toRightOfParent(duration, false); break;}
-                }
-                anim.setAnimationListener(getAnimationListener(next, prev));
-
-                if (nextPosition != targetPosition) { nextPosition--; out = false; }
+                if (nextPosition != targetPosition) { nextPosition--;out = false; }
                 else out = true;
 
-                prev.startAnimation(anim);
+                if (prev != null) {
+                    switch (moveAnim) {
+                        case ANIMATION_MOVE_RIGHT: {
+                            anim.addAnimation(animus.toRightOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(1.0f, 0.6f, 1.0f, 0.6f, 1.0f, 0.5f, duration, false));
+                            break; }
+                        case ANIMATION_MOVE_BOTTOM: {
+                            anim.addAnimation(animus.toBottomOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(1.0f, 0.6f, 1.0f, 0.6f, 0.5f, 1.0f, duration, false));
+                            break; }
+                        case ANIMATION_MOVE_LEFT: {
+                            anim.addAnimation(animus.toLeftOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(1.0f, 0.6f, 1.0f, 0.6f, 0.0f, 0.5f, duration, false));
+                            break; }
+                        case ANIMATION_MOVE_TOP: {
+                            anim.addAnimation(animus.toTopOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(1.0f, 0.6f, 1.0f, 0.6f, 0.5f, 0.0f, duration, false));
+                            break; }
+                        default: {
+                            anim.addAnimation(animus.toRightOfParent(duration, false));
+                            if (isScaleMod) anim.addAnimation(animus.scale(1.0f, 0.6f, 1.0f, 0.6f, 1.0f, 0.5f, duration, false));
+                            break; }
+                    }
+                    if (out) anim.setAnimationListener(getAnimationListener(next, prev, true));
+                    else anim.setAnimationListener(getAnimationListener(next, prev, false));
+                    prev.startAnimation(anim);
+                }
             }
 
             if (out) {
@@ -729,17 +800,26 @@ public class FrameController extends FrameLayout implements Controller {
             isBlocked = true;
             View next = getChildAt(nextPosition);
             View prev = cContainer;
-            Animation nextAnim;
-            Animation prevAnim;
+
+            AnimationSet nextAnim = new AnimationSet(false);
+            AnimationSet prevAnim = new AnimationSet(false);
 
             if (action == 0) {
                 if (fc.config.getSwitchAnimation() == ANIMATION_SCROLL_VERTICAL) {
-                    nextAnim = animus.fromBottomOfParent(duration, false);
-                    prevAnim = animus.toTopOfParent(duration, false);
+                    nextAnim.addAnimation(animus.fromBottomOfParent(duration, false));
+                    prevAnim.addAnimation(animus.toTopOfParent(duration, false));
+                    if (isScaleMod) {
+                        nextAnim.addAnimation(animus.scale(0.7f, 1.0f, 0.7f, 1.0f, 0.5f, 1.0f, duration, false));
+                        prevAnim.addAnimation(animus.scale(1.0f, 0.7f, 1.0f, 0.7f, 0.5f, 0.0f, duration, false));
+                    }
                 }
                 else {
-                    nextAnim = animus.fromRightOfParent(duration, false);
-                    prevAnim = animus.toLeftOfParent(duration, false);
+                    nextAnim.addAnimation(animus.fromRightOfParent(duration, false));
+                    prevAnim.addAnimation(animus.toLeftOfParent(duration, false));
+                    if (isScaleMod) {
+                        nextAnim.addAnimation(animus.scale(0.7f, 1.0f, 0.7f, 1.0f, 1.0f, 0.5f, duration, false));
+                        prevAnim.addAnimation(animus.scale(1.0f, 0.7f, 1.0f, 0.7f, 0.0f, 0.5f, duration, false));
+                    }
                 }
 
                 if (nextPosition != targetPosition) { nextPosition++; out = false; }
@@ -747,29 +827,37 @@ public class FrameController extends FrameLayout implements Controller {
             }
             else {
                 if (fc.config.getSwitchAnimation() == ANIMATION_SCROLL_VERTICAL) {
-                    nextAnim = animus.fromTopOfParent(duration, false);
-                    prevAnim = animus.toBottomOfParent(duration, false);
+                    nextAnim.addAnimation(animus.fromTopOfParent(duration, false));
+                    prevAnim.addAnimation(animus.toBottomOfParent(duration, false));
+                    if (isScaleMod) {
+                        nextAnim.addAnimation(animus.scale(0.7f, 1.0f, 0.7f, 1.0f, 0.5f, 0.0f, duration, false));
+                        prevAnim.addAnimation(animus.scale(1.0f, 0.7f, 1.0f, 0.7f, 0.5f, 1.0f, duration, false));
+                    }
                 }
                 else {
-                    nextAnim = animus.fromLeftOfParent(duration, false);
-                    prevAnim = animus.toRightOfParent(duration, false);
+                    nextAnim.addAnimation(animus.fromLeftOfParent(duration, false));
+                    prevAnim.addAnimation(animus.toRightOfParent(duration, false));
+                    if (isScaleMod) {
+                        nextAnim.addAnimation(animus.scale(0.7f, 1.0f, 0.7f, 1.0f, 0.0f, 0.5f, duration, false));
+                        prevAnim.addAnimation(animus.scale(1.0f, 0.7f, 1.0f, 0.7f, 1.0f, 0.5f, duration, false));
+                    }
                 }
 
                 if (nextPosition != targetPosition) { nextPosition--; out = false; }
                 else out = true;
             }
 
-            prevAnim.setAnimationListener(getPrevListener(prev));
-
-            if (prev != null) prev.startAnimation(prevAnim);
-            if (next != null) {
-                next.setVisibility(VISIBLE);
-                next.startAnimation(nextAnim);
-                cContainer = (FrameLayout)next;
+            if (prev != null) {
+                if (out) prevAnim.setAnimationListener(getAnimationListener(next, prev, true));
+                else prevAnim.setAnimationListener(getAnimationListener(next, prev, false));
+                prev.startAnimation(prevAnim);
             }
+            else if (out) nextAnim.setAnimationListener(getAnimationListener(next, prev, true));
+                 else nextAnim.setAnimationListener(getAnimationListener(next, prev, false));
+
+            if (next != null) next.startAnimation(nextAnim);
 
             if (out) {
-                if (prev == null) isBlocked = false;
                 if (switchListener != null)
                     switchListener.onTargetReached(currentContainer, targetPosition);
             }
@@ -777,8 +865,7 @@ public class FrameController extends FrameLayout implements Controller {
         }
     };
 
-
-    private Animation.AnimationListener getAnimationListener(final View next, final View prev) {
+    private Animation.AnimationListener getAnimationListener(final View next, final View prev, final boolean unblock) {
 
         return new Animation.AnimationListener() {
             @Override
@@ -792,27 +879,7 @@ public class FrameController extends FrameLayout implements Controller {
             public void onAnimationEnd(Animation animation) {
                 if (prev != null) prev.setVisibility(GONE);
                 if (out) {
-                    if (isSetGone) setVisibility(GONE);
-                    if (switchListener != null) switchListener.onAnimationEnds(isOut());
-                }
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) { }
-        };
-    }
-
-    private Animation.AnimationListener getPrevListener(final View prev) {
-
-        return new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) { }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                if (prev != null) prev.setVisibility(GONE);
-                if (out) {
-                    isBlocked = false;
+                    if (unblock) isBlocked = false;
                     if (isSetGone) setVisibility(GONE);
                     if (switchListener != null) switchListener.onAnimationEnds(isOut());
                 }

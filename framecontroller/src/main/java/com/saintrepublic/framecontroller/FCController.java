@@ -118,6 +118,7 @@ class FCController {
         private Drawable backgroundDrawable;
         private int backgroundColor;
         private int animation;
+        private boolean isScaleMod;
         private int speed;
 
         private int[] margins;
@@ -130,6 +131,7 @@ class FCController {
         void setDefaultConfig() {
             useDrawable = false;
             animation = -1;
+            isScaleMod = false;
             speed = 1;
             backgroundColor = Color.argb(255, 255, 255, 255);
             setMargins(0,0,0,0);
@@ -172,6 +174,14 @@ class FCController {
 
         int getSwitchAnimation() {
             return animation;
+        }
+
+        void setScaleMod(boolean scaleModEnabled) {
+            isScaleMod = scaleModEnabled;
+        }
+
+        boolean isScaleMod() {
+            return isScaleMod;
         }
 
         void setAnimationSpeed(int speed) {

@@ -317,9 +317,10 @@ public interface Controller {
      *
      * Use types constants as Controller.ANIMATION_...
      *
-     * @param AnimationType index of animation type
+     * @param animationType index of animation type
+     * @param enableScaleModifier add scale factor to animations
      */
-    void setSwitchAnimation(@IntRange(from=-1,to=8) int AnimationType);
+    void setSwitchAnimation(@IntRange(from=-1,to=8) int animationType, boolean enableScaleModifier);
 
     /**
      * Return index of current animation type
@@ -327,6 +328,13 @@ public interface Controller {
      * @return index of current animation type
      */
     int getSwitchAnimationType();
+
+    /**
+     * Return true if scale modifier is enabled on current animation type
+     *
+     * @return true if scale modifier is enabled else false
+     */
+    boolean isScaleModifierEnabled();
 
     /**
      * Set speed of switching animations

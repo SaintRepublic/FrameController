@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         controller.setContainersMargins(30);
 
         // Set the animation for switching container
-        controller.setSwitchAnimation(Controller.ANIMATION_MOVE_RIGHT);
+        controller.setSwitchAnimation(Controller.ANIMATION_SWIPE, true);
         controller.setAnimationSpeed(Controller.SPEED_NORMAL);
 
         // Set new switch listener
@@ -130,10 +130,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public void btnNextClick(View v) {
 
-        if (!controller.isCurrentLast())
-            controller.goToNext();
-        else
-            controller.goToFirst(false);
+        if (!controller.goToNext()) {
+            controller.goOut(false, false);
+        }
     }
 
 }
