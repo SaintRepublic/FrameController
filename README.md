@@ -1,7 +1,7 @@
 # FrameController
 FrameController is a library that will help you to work with multi-layer app interfaces.
 
-Version: `1.0.5`
+Latest version: (https://bintray.com/saintrepublic/Views/framecontroller/_latestVersion)
 
 <img src="https://github.com/SaintRepublic/FrameController/blob/master/sample/framecontroller.gif" width="250">
 
@@ -42,7 +42,7 @@ protected void onCreate(Bundle savedInstanceState) {
      setContentView(R.layout.activity_main);
 
      controller = findViewById(R.id.frameController);
-     controller.setSwitchAnimation(Controller.ANIMATION_SWIPE);
+     controller.setSwitchAnimation(Controller.ANIMATION_SWIPE, true);
      controller.setAnimationSpeed(Controller.SPEED_NORMAL);
 
      controller.addLayoutToNewContainer(R.layout.layout_1);
